@@ -156,7 +156,7 @@ function Step1Form({ formData, onChange, onNext }: {
             className="form-select"
           >
             <option value="">Sélectionnez votre âge</option>
-            {Array.from({ length: 41 }, (_, i) => 55 + i).map(age => (
+            {Array.from({ length: 76 }, (_, i) => 25 + i).map(age => (
               <option key={age} value={age}>{age} ans</option>
             ))}
           </select>
