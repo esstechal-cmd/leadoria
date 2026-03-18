@@ -6,7 +6,7 @@ import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
-const PORT = 3001;
+const PORT = process.env.PORT || 3001;
 const LEADS_FILE = path.join(__dirname, 'leads.json');
 const DASHBOARD_PASSWORD = 'admin2025'; // Changez ce mot de passe !
 
