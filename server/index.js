@@ -10,7 +10,13 @@ const PORT = 3001;
 const LEADS_FILE = path.join(__dirname, 'leads.json');
 const DASHBOARD_PASSWORD = 'admin2025'; // Changez ce mot de passe !
 
-app.use(cors());
+app.use(cors({
+  origin: [
+    'https://www.mutuelleseniorcomparatif.fr',
+    'https://mutuelleseniorcomparatif.fr',
+    'http://localhost:5173',
+  ]
+}));
 app.use(express.json());
 
 // Init leads file
