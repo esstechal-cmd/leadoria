@@ -1,14 +1,11 @@
 import express from 'express';
 import cors from 'cors';
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import { MongoClient, ObjectId } from 'mongodb';
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
 const PORT = process.env.PORT || 3001;
-const LEADS_FILE = path.join(__dirname, 'leads.json');
-const DASHBOARD_PASSWORD = '159852Mp*'; // Changez ce mot de passe !
+const DASHBOARD_PASSWORD = process.env.DASHBOARD_PASSWORD || 'admin2025';
+const MONGODB_URI = process.env.MONGODB_URI;
 
 app.use(cors({
   origin: [
@@ -19,48 +16,37 @@ app.use(cors({
 }));
 app.use(express.json());
 
-// Init leads file
-if (!fs.existsSync(LEADS_FILE)) {
-  fs.writeFileSync(LEADS_FILE, JSON.stringify([], null, 2));
+let db;
+async function connectDB() {
+  if (!MONGODB_URI) {
+    console.error('❌ MONGODB_URI manquant !');
+    process.exit(1);
+  }
+  const client = new MongoClient(MONGODB_URI);
+  await client.connect();
+  db = client.db('leadoria');
+  console.log('✅ Connecté à MongoDB Atlas');
 }
 
-function readLeads() {
-  return JSON.parse(fs.readFileSync(LEADS_FILE, 'utf-8'));
+function getLeads() {
+  return db.collection('leads');
 }
 
-function writeLeads(leads) {
-  fs.writeFileSync(LEADS_FILE, JSON.stringify(leads, null, 2));
-}
-
-// POST /api/leads — reçoit un nouveau lead depuis le formulaire
-app.post('/api/leads', (req, res) => {
+app.post('/api/leads', async (req, res) => {
   const { age, codePostal, telephone, email, couverture, regime } = req.body;
-
   if (!telephone || !email) {
     return res.status(400).json({ error: 'Téléphone et email requis' });
   }
-
   const lead = {
-    id: Date.now().toString(),
-    age,
-    codePostal,
-    telephone,
-    email,
-    couverture,
-    regime,
+    age, codePostal, telephone, email, couverture, regime,
     date: new Date().toISOString(),
     statut: 'Nouveau',
   };
-
-  const leads = readLeads();
-  leads.unshift(lead); // plus récent en premier
-  writeLeads(leads);
-
-  console.log(`✅ Nouveau lead: ${email} (${telephone})`);
-  res.json({ success: true, id: lead.id });
+  const result = await getLeads().insertOne(lead);
+  console.log(`✅ Nouveau lead: ${email}`);
+  res.json({ success: true, id: result.insertedId });
 });
 
-// POST /api/auth — vérification mot de passe dashboard
 app.post('/api/auth', (req, res) => {
   const { password } = req.body;
   if (password === DASHBOARD_PASSWORD) {
@@ -70,46 +56,34 @@ app.post('/api/auth', (req, res) => {
   }
 });
 
-// GET /api/leads — récupère tous les leads (protégé)
-app.get('/api/leads', (req, res) => {
+function checkAuth(req, res) {
   const token = req.headers.authorization?.replace('Bearer ', '');
   const expected = Buffer.from(DASHBOARD_PASSWORD).toString('base64');
-  if (token !== expected) {
-    return res.status(401).json({ error: 'Non autorisé' });
-  }
-  const leads = readLeads();
-  res.json(leads);
+  if (token !== expected) { res.status(401).json({ error: 'Non autorisé' }); return false; }
+  return true;
+}
+
+app.get('/api/leads', async (req, res) => {
+  if (!checkAuth(req, res)) return;
+  const leads = await getLeads().find({}).sort({ date: -1 }).toArray();
+  res.json(leads.map(l => ({ ...l, id: l._id.toString() })));
 });
 
-// PATCH /api/leads/:id — met à jour le statut d'un lead
-app.patch('/api/leads/:id', (req, res) => {
-  const token = req.headers.authorization?.replace('Bearer ', '');
-  const expected = Buffer.from(DASHBOARD_PASSWORD).toString('base64');
-  if (token !== expected) return res.status(401).json({ error: 'Non autorisé' });
-
-  const leads = readLeads();
-  const idx = leads.findIndex(l => l.id === req.params.id);
-  if (idx === -1) return res.status(404).json({ error: 'Lead introuvable' });
-
-  leads[idx] = { ...leads[idx], ...req.body };
-  writeLeads(leads);
-  res.json(leads[idx]);
-});
-
-// DELETE /api/leads/:id — supprime un lead
-app.delete('/api/leads/:id', (req, res) => {
-  const token = req.headers.authorization?.replace('Bearer ', '');
-  const expected = Buffer.from(DASHBOARD_PASSWORD).toString('base64');
-  if (token !== expected) return res.status(401).json({ error: 'Non autorisé' });
-
-  const leads = readLeads();
-  const filtered = leads.filter(l => l.id !== req.params.id);
-  writeLeads(filtered);
+app.patch('/api/leads/:id', async (req, res) => {
+  if (!checkAuth(req, res)) return;
+  const { _id, id, ...update } = req.body;
+  await getLeads().updateOne({ _id: new ObjectId(req.params.id) }, { $set: update });
   res.json({ success: true });
 });
 
-app.listen(PORT, () => {
-  console.log(`🚀 Serveur backend démarré sur http://localhost:${PORT}`);
-  console.log(`📊 Dashboard: http://localhost:5173/dashboard`);
-  console.log(`🔑 Mot de passe dashboard: ${DASHBOARD_PASSWORD}`);
+app.delete('/api/leads/:id', async (req, res) => {
+  if (!checkAuth(req, res)) return;
+  await getLeads().deleteOne({ _id: new ObjectId(req.params.id) });
+  res.json({ success: true });
+});
+
+connectDB().then(() => {
+  app.listen(PORT, () => {
+    console.log(`🚀 Serveur démarré sur le port ${PORT}`);
+  });
 });
