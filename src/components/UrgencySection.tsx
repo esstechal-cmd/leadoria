@@ -46,7 +46,7 @@ export default function UrgencySection() {
           </div>
 
           <h2 className="font-heading font-bold text-2xl md:text-3xl text-white mb-6">
-            Les tarifs préférentiels 2025 expirent dans :
+            Les tarifs préférentiels 2026 expirent dans :
           </h2>
 
           {/* Countdown */}
@@ -91,7 +91,7 @@ export default function UrgencySection() {
             onClick={() => document.getElementById('formulaire')?.scrollIntoView({ behavior: 'smooth' })}
             className="bg-yellow-400 hover:bg-yellow-300 text-[#7f1d1d] font-body font-bold text-xl px-10 py-5 rounded-xl transition-all shadow-2xl btn-pulse"
           >
-            ⚡ Je profite des tarifs 2025 maintenant
+            ⚡ Je profite des tarifs 2026 maintenant
           </button>
           <p className="font-body text-red-300 text-sm mt-3">
             Offre valable uniquement pour les nouvelles demandes. Sans engagement.

@@ -47,7 +47,7 @@ export default function HeroSection() {
           <span className="font-bold bg-white text-[#dc2626] px-2 py-0.5 rounded mx-1 tick">
             {pad(timeLeft.hours)}:{pad(timeLeft.minutes)}:{pad(timeLeft.seconds)}
           </span>
-          {' '}pour profiter des tarifs préférentiels 2025
+          {' '}pour profiter des tarifs préférentiels 2026
         </p>
       </div>
 
