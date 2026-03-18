@@ -5,7 +5,7 @@ import {
   Download, Search, Filter, Eye, Shield
 } from 'lucide-react';
 
-const API_URL = 'http://localhost:3001';
+const API_URL = 'https://leadoria-production.up.railway.app';
 
 const STATUTS = ['Nouveau', 'Contacté', 'En cours', 'Converti', 'Perdu'];
 const STATUT_COLORS: Record<string, string> = {

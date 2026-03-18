@@ -38,7 +38,7 @@ export default function LeadForm() {
     e.preventDefault();
     if (formData.telephone && formData.email) {
       try {
-        await fetch('http://localhost:3001/api/leads', {
+        await fetch('https://leadoria-production.up.railway.app/api/leads', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(formData),
