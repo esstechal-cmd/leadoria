@@ -117,10 +117,10 @@ export default function Dashboard() {
   };
 
   const exportCSV = () => {
-    const headers = ['Date', 'Âge', 'Code Postal', 'Téléphone', 'Email', 'Couverture', 'Régime', 'Statut'];
+    const headers = ['Date', 'Nom', 'Prénom', 'Âge', 'Code Postal', 'Téléphone', 'Email', 'Couverture', 'Régime', 'Statut'];
     const rows = filteredLeads.map(l => [
       new Date(l.date).toLocaleString('fr-FR'),
-      l.age, l.codePostal, l.telephone, l.email,
+      l.nom, l.prenom, l.age, l.codePostal, l.telephone, l.email,
       l.couverture, l.regime, l.statut
     ]);
     const csv = [headers, ...rows].map(r => r.join(';')).join('\n');
@@ -134,12 +134,13 @@ export default function Dashboard() {
   const filteredLeads = leads.filter(l => {
     const q = search.toLowerCase();
     const matchSearch = !q || l.email.toLowerCase().includes(q) || 
-      l.telephone.includes(q) || l.codePostal.includes(q);
+      l.telephone.includes(q) || l.codePostal.includes(q) ||
+      (l.nom || '').toLowerCase().includes(q) ||
+      (l.prenom || '').toLowerCase().includes(q);
     const matchStatut = !filterStatut || l.statut === filterStatut;
     return matchSearch && matchStatut;
   });
 
-  // Stats
   const stats = {
     total: leads.length,
     nouveaux: leads.filter(l => l.statut === 'Nouveau').length,
@@ -147,7 +148,6 @@ export default function Dashboard() {
     today: leads.filter(l => new Date(l.date).toDateString() === new Date().toDateString()).length,
   };
 
-  // LOGIN SCREEN
   if (!token) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#0f172a] via-[#1e3a8a] to-[#1a56db] flex items-center justify-center p-4">
@@ -159,7 +159,6 @@ export default function Dashboard() {
             <h1 className="font-heading font-bold text-2xl text-[#0f172a]">Dashboard Leads</h1>
             <p className="font-body text-[#64748b] text-sm mt-1">MutuelleSenior Comparatif</p>
           </div>
-
           <form onSubmit={login} className="space-y-4">
             <div>
               <label className="block font-body font-semibold text-[#374151] text-sm mb-2">
@@ -192,10 +191,8 @@ export default function Dashboard() {
     );
   }
 
-  // DASHBOARD
   return (
     <div className="min-h-screen bg-[#f8fafc]">
-      {/* Header */}
       <header className="bg-white border-b border-[#e2e8f0] px-6 py-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 bg-[#1a56db] rounded-lg flex items-center justify-center">
@@ -207,24 +204,15 @@ export default function Dashboard() {
           </div>
         </div>
         <div className="flex items-center gap-3">
-          <button
-            onClick={fetchLeads}
-            className="flex items-center gap-2 bg-[#f1f5f9] hover:bg-[#e2e8f0] text-[#475569] font-body font-semibold text-sm px-4 py-2 rounded-lg transition-colors"
-          >
+          <button onClick={fetchLeads} className="flex items-center gap-2 bg-[#f1f5f9] hover:bg-[#e2e8f0] text-[#475569] font-body font-semibold text-sm px-4 py-2 rounded-lg transition-colors">
             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
             Actualiser
           </button>
-          <button
-            onClick={exportCSV}
-            className="flex items-center gap-2 bg-[#16a34a] hover:bg-[#15803d] text-white font-body font-semibold text-sm px-4 py-2 rounded-lg transition-colors"
-          >
+          <button onClick={exportCSV} className="flex items-center gap-2 bg-[#16a34a] hover:bg-[#15803d] text-white font-body font-semibold text-sm px-4 py-2 rounded-lg transition-colors">
             <Download className="w-4 h-4" />
             Export CSV
           </button>
-          <button
-            onClick={logout}
-            className="flex items-center gap-2 bg-red-50 hover:bg-red-100 text-red-600 font-body font-semibold text-sm px-4 py-2 rounded-lg transition-colors"
-          >
+          <button onClick={logout} className="flex items-center gap-2 bg-red-50 hover:bg-red-100 text-red-600 font-body font-semibold text-sm px-4 py-2 rounded-lg transition-colors">
             <LogOut className="w-4 h-4" />
             Déconnexion
           </button>
@@ -232,7 +220,6 @@ export default function Dashboard() {
       </header>
 
       <div className="max-w-7xl mx-auto px-6 py-8">
-        {/* Stats cards */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
           {[
             { label: 'Total leads', value: stats.total, icon: Users, color: 'text-blue-600', bg: 'bg-blue-50' },
@@ -253,15 +240,13 @@ export default function Dashboard() {
         </div>
 
         <div className="flex gap-6">
-          {/* Leads list */}
           <div className="flex-1">
-            {/* Filters */}
             <div className="flex gap-3 mb-4">
               <div className="flex-1 relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#94a3b8]" />
                 <input
                   type="text"
-                  placeholder="Rechercher email, téléphone, CP..."
+                  placeholder="Rechercher nom, email, téléphone, CP..."
                   value={search}
                   onChange={e => setSearch(e.target.value)}
                   className="w-full pl-10 pr-4 py-2.5 border border-[#e2e8f0] rounded-xl font-body text-sm text-[#0f172a] focus:outline-none focus:border-[#1a56db] bg-white"
@@ -280,16 +265,12 @@ export default function Dashboard() {
               </div>
             </div>
 
-            {/* Table */}
             <div className="bg-white rounded-2xl border border-[#e2e8f0] shadow-sm overflow-hidden">
               {filteredLeads.length === 0 ? (
                 <div className="text-center py-16">
                   <Users className="w-12 h-12 text-[#cbd5e1] mx-auto mb-3" />
                   <p className="font-body text-[#94a3b8] font-semibold">
                     {leads.length === 0 ? 'Aucun lead pour le moment' : 'Aucun résultat'}
-                  </p>
-                  <p className="font-body text-[#cbd5e1] text-sm mt-1">
-                    {leads.length === 0 ? 'Les leads apparaîtront ici dès la première soumission' : 'Modifiez vos filtres'}
                   </p>
                 </div>
               ) : (
@@ -306,11 +287,7 @@ export default function Dashboard() {
                     </thead>
                     <tbody className="divide-y divide-[#f1f5f9]">
                       {filteredLeads.map(lead => (
-                        <tr 
-                          key={lead.id} 
-                          className="hover:bg-[#f8fafc] transition-colors cursor-pointer"
-                          onClick={() => setSelectedLead(lead)}
-                        >
+                        <tr key={lead.id} className="hover:bg-[#f8fafc] transition-colors cursor-pointer" onClick={() => setSelectedLead(lead)}>
                           <td className="px-4 py-3">
                             <span className="font-body text-[#475569] text-xs">
                               {new Date(lead.date).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: '2-digit' })}
@@ -321,17 +298,17 @@ export default function Dashboard() {
                             </span>
                           </td>
                           <td className="px-4 py-3">
-                           <div className="font-body font-bold text-[#0f172a] text-sm">
-  {lead.prenom} {lead.nom}
-</div>
-<div className="flex items-center gap-1 font-body text-[#0f172a] text-sm">
-  <Mail className="w-3 h-3 text-[#94a3b8]" />
-  {lead.email}
-</div>
-<div className="flex items-center gap-1 font-body text-[#64748b] text-xs mt-0.5">
-  <Phone className="w-3 h-3" />
-  {lead.telephone}
-</div>
+                            <div className="font-body font-bold text-[#0f172a] text-sm">
+                              {lead.prenom} {lead.nom}
+                            </div>
+                            <div className="flex items-center gap-1 font-body text-[#0f172a] text-sm">
+                              <Mail className="w-3 h-3 text-[#94a3b8]" />
+                              {lead.email}
+                            </div>
+                            <div className="flex items-center gap-1 font-body text-[#64748b] text-xs mt-0.5">
+                              <Phone className="w-3 h-3" />
+                              {lead.telephone}
+                            </div>
                           </td>
                           <td className="px-4 py-3">
                             <span className="font-body text-[#0f172a] text-sm font-semibold">{lead.age} ans</span>
@@ -356,18 +333,10 @@ export default function Dashboard() {
                           </td>
                           <td className="px-4 py-3" onClick={e => e.stopPropagation()}>
                             <div className="flex items-center gap-2">
-                              <button
-                                onClick={() => setSelectedLead(lead)}
-                                className="p-1.5 rounded-lg hover:bg-blue-50 text-[#64748b] hover:text-[#1a56db] transition-colors"
-                                title="Voir détails"
-                              >
+                              <button onClick={() => setSelectedLead(lead)} className="p-1.5 rounded-lg hover:bg-blue-50 text-[#64748b] hover:text-[#1a56db] transition-colors" title="Voir détails">
                                 <Eye className="w-4 h-4" />
                               </button>
-                              <button
-                                onClick={() => deleteLead(lead.id)}
-                                className="p-1.5 rounded-lg hover:bg-red-50 text-[#64748b] hover:text-red-500 transition-colors"
-                                title="Supprimer"
-                              >
+                              <button onClick={() => deleteLead(lead.id)} className="p-1.5 rounded-lg hover:bg-red-50 text-[#64748b] hover:text-red-500 transition-colors" title="Supprimer">
                                 <Trash2 className="w-4 h-4" />
                               </button>
                             </div>
@@ -384,26 +353,31 @@ export default function Dashboard() {
             </p>
           </div>
 
-          {/* Detail panel */}
           {selectedLead && (
             <div className="w-80 bg-white rounded-2xl border border-[#e2e8f0] shadow-sm p-6 h-fit sticky top-6">
               <div className="flex items-center justify-between mb-5">
                 <h3 className="font-heading font-bold text-[#0f172a]">Détail lead</h3>
-                <button
-                  onClick={() => setSelectedLead(null)}
-                  className="text-[#94a3b8] hover:text-[#475569]"
-                >
+                <button onClick={() => setSelectedLead(null)} className="text-[#94a3b8] hover:text-[#475569]">
                   <XCircle className="w-5 h-5" />
                 </button>
               </div>
 
               <div className="space-y-4">
                 <div>
-  <p className="font-body text-xs text-[#94a3b8] uppercase tracking-wide mb-1">Identité</p>
-  <p className="font-body font-bold text-[#0f172a]">
-    {selectedLead.prenom} {selectedLead.nom}
-  </p>
-</div>
+                  <p className="font-body text-xs text-[#94a3b8] uppercase tracking-wide mb-1">Identité</p>
+                  <p className="font-body font-bold text-[#0f172a] text-base">
+                    {selectedLead.prenom} {selectedLead.nom}
+                  </p>
+                </div>
+
+                <div>
+                  <p className="font-body text-xs text-[#94a3b8] uppercase tracking-wide mb-1">Contact</p>
+                  <div className="flex items-center gap-2 font-body text-[#0f172a] text-sm font-semibold">
+                    <Mail className="w-4 h-4 text-[#1a56db]" />
+                    <a href={`mailto:${selectedLead.email}`} className="hover:text-[#1a56db]">
+                      {selectedLead.email}
+                    </a>
+                  </div>
                   <div className="flex items-center gap-2 font-body text-[#0f172a] text-sm mt-1">
                     <Phone className="w-4 h-4 text-[#16a34a]" />
                     <a href={`tel:${selectedLead.telephone}`} className="hover:text-[#16a34a] font-semibold">
@@ -453,26 +427,17 @@ export default function Dashboard() {
                 </div>
 
                 <div className="flex gap-2 pt-2">
-                  <a
-                    href={`mailto:${selectedLead.email}`}
-                    className="flex-1 flex items-center justify-center gap-2 bg-[#1a56db] hover:bg-[#1e3a8a] text-white font-body font-semibold text-sm py-2.5 rounded-xl transition-colors"
-                  >
+                  <a href={`mailto:${selectedLead.email}`} className="flex-1 flex items-center justify-center gap-2 bg-[#1a56db] hover:bg-[#1e3a8a] text-white font-body font-semibold text-sm py-2.5 rounded-xl transition-colors">
                     <Mail className="w-4 h-4" />
                     Email
                   </a>
-                  <a
-                    href={`tel:${selectedLead.telephone}`}
-                    className="flex-1 flex items-center justify-center gap-2 bg-[#16a34a] hover:bg-[#15803d] text-white font-body font-semibold text-sm py-2.5 rounded-xl transition-colors"
-                  >
+                  <a href={`tel:${selectedLead.telephone}`} className="flex-1 flex items-center justify-center gap-2 bg-[#16a34a] hover:bg-[#15803d] text-white font-body font-semibold text-sm py-2.5 rounded-xl transition-colors">
                     <Phone className="w-4 h-4" />
                     Appeler
-  </a>
+                  </a>
                 </div>
 
-                <button
-                  onClick={() => deleteLead(selectedLead.id)}
-                  className="w-full flex items-center justify-center gap-2 bg-red-50 hover:bg-red-100 text-red-600 font-body font-semibold text-sm py-2.5 rounded-xl transition-colors"
-                >
+                <button onClick={() => deleteLead(selectedLead.id)} className="w-full flex items-center justify-center gap-2 bg-red-50 hover:bg-red-100 text-red-600 font-body font-semibold text-sm py-2.5 rounded-xl transition-colors">
                   <Trash2 className="w-4 h-4" />
                   Supprimer ce lead
                 </button>
