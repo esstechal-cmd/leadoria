@@ -25,6 +25,8 @@ const COUVERTURE_LABELS: Record<string, string> = {
 
 interface Lead {
   id: string;
+  nom: string;
+  prenom: string;
   age: string;
   codePostal: string;
   telephone: string;
@@ -319,14 +321,17 @@ export default function Dashboard() {
                             </span>
                           </td>
                           <td className="px-4 py-3">
-                            <div className="flex items-center gap-1 font-body text-[#0f172a] text-sm font-semibold">
-                              <Mail className="w-3 h-3 text-[#94a3b8]" />
-                              {lead.email}
-                            </div>
-                            <div className="flex items-center gap-1 font-body text-[#64748b] text-xs mt-0.5">
-                              <Phone className="w-3 h-3" />
-                              {lead.telephone}
-                            </div>
+                           <div className="font-body font-bold text-[#0f172a] text-sm">
+  {lead.prenom} {lead.nom}
+</div>
+<div className="flex items-center gap-1 font-body text-[#0f172a] text-sm">
+  <Mail className="w-3 h-3 text-[#94a3b8]" />
+  {lead.email}
+</div>
+<div className="flex items-center gap-1 font-body text-[#64748b] text-xs mt-0.5">
+  <Phone className="w-3 h-3" />
+  {lead.telephone}
+</div>
                           </td>
                           <td className="px-4 py-3">
                             <span className="font-body text-[#0f172a] text-sm font-semibold">{lead.age} ans</span>
@@ -394,13 +399,11 @@ export default function Dashboard() {
 
               <div className="space-y-4">
                 <div>
-                  <p className="font-body text-xs text-[#94a3b8] uppercase tracking-wide mb-1">Contact</p>
-                  <div className="flex items-center gap-2 font-body text-[#0f172a] text-sm font-semibold">
-                    <Mail className="w-4 h-4 text-[#1a56db]" />
-                    <a href={`mailto:${selectedLead.email}`} className="hover:text-[#1a56db]">
-                      {selectedLead.email}
-                    </a>
-                  </div>
+  <p className="font-body text-xs text-[#94a3b8] uppercase tracking-wide mb-1">Identité</p>
+  <p className="font-body font-bold text-[#0f172a]">
+    {selectedLead.prenom} {selectedLead.nom}
+  </p>
+</div>
                   <div className="flex items-center gap-2 font-body text-[#0f172a] text-sm mt-1">
                     <Phone className="w-4 h-4 text-[#16a34a]" />
                     <a href={`tel:${selectedLead.telephone}`} className="hover:text-[#16a34a] font-semibold">
