@@ -3,6 +3,8 @@ import { CheckCircle, Shield, Lock, Phone, ArrowRight, Star } from 'lucide-react
 import { motion } from 'framer-motion';
 
 interface FormData {
+  nom: string;
+  prenom: string;
   age: string;
   codePostal: string;
   telephone: string;
@@ -15,13 +17,15 @@ export default function LeadForm() {
   const [step, setStep] = useState(1);
   const [submitted, setSubmitted] = useState(false);
   const [formData, setFormData] = useState<FormData>({
-    age: '',
-    codePostal: '',
-    telephone: '',
-    email: '',
-    couverture: '',
-    regime: '',
-  });
+  nom: '',
+  prenom: '',
+  age: '',
+  codePostal: '',
+  telephone: '',
+  email: '',
+  couverture: '',
+  regime: '',
+});
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
@@ -144,6 +148,35 @@ function Step1Form({ formData, onChange, onNext }: {
         📋 Votre profil (étape 1/2)
       </h3>
       <div className="grid md:grid-cols-2 gap-5">
+       <div>
+  <label className="block font-body font-semibold text-[#374151] text-sm mb-2">
+    Nom *
+  </label>
+  <input
+    type="text"
+    name="nom"
+    value={formData.nom}
+    onChange={onChange}
+    placeholder="Ex: Dupont"
+    required
+    className="form-input"
+  />
+</div>
+
+<div>
+  <label className="block font-body font-semibold text-[#374151] text-sm mb-2">
+    Prénom *
+  </label>
+  <input
+    type="text"
+    name="prenom"
+    value={formData.prenom}
+    onChange={onChange}
+    placeholder="Ex: Marie"
+    required
+    className="form-input"
+  />
+</div>
         <div>
           <label className="block font-body font-semibold text-[#374151] text-sm mb-2">
             Votre âge *
