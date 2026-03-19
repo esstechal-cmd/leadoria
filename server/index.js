@@ -6,11 +6,12 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 const DASHBOARD_PASSWORD = process.env.DASHBOARD_PASSWORD || 'admin2025';
 const MONGODB_URI = process.env.MONGODB_URI;
-
 app.use(cors({
   origin: [
     'https://www.mutuelleseniorcomparatif.fr',
     'https://mutuelleseniorcomparatif.fr',
+    'https://leadoria-git-main-leadoria.vercel.app',
+    'https://leadoria-bpczxed5y-leadoria.vercel.app',
     'http://localhost:5173',
   ]
 }));
