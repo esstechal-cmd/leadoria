@@ -34,15 +34,15 @@ function getLeads() {
 }
 
 app.post('/api/leads', async (req, res) => {
-  const { age, codePostal, telephone, email, couverture, regime } = req.body;
+  const { nom, prenom, age, codePostal, telephone, email, couverture, regime } = req.body;
   if (!telephone || !email) {
     return res.status(400).json({ error: 'Téléphone et email requis' });
   }
-  const lead = {
-    age, codePostal, telephone, email, couverture, regime,
-    date: new Date().toISOString(),
-    statut: 'Nouveau',
-  };
+const lead = {
+  nom, prenom, age, codePostal, telephone, email, couverture, regime,
+  date: new Date().toISOString(),
+  statut: 'Nouveau',
+};
   const result = await getLeads().insertOne(lead);
   console.log(`✅ Nouveau lead: ${email}`);
   res.json({ success: true, id: result.insertedId });
